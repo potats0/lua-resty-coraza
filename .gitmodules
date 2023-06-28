@@ -1,0 +1,3 @@
+[submodule "t/coreruleset"]
+	path = t/coreruleset
+	url = https://github.com/coreruleset/coreruleset.git
