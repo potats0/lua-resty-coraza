@@ -8,10 +8,12 @@ our $HttpConfig = <<'_EOC_';
     init_worker_by_lua_block{
             local coraza = require "resty.coraza"
             coraza.do_init()
-            coraza.rules_add_file("/Users/mac/GolandProjects/libcoraza/lua-resty-coroza/lib/resty/coraza.conf")
-            coraza.rules_add("Include /Users/mac/Downloads/coreruleset-4.0-dev/rules/*.conf")
+            coraza.rules_add_file("%s/t/coraza.conf")
+            coraza.rules_add("Include %s/t/coreruleset/rules/*.conf")
     }
 _EOC_
+
+$HttpConfig = sprintf($HttpConfig, $ENV{PWD}, $ENV{PWD});
 
 our $LocationConfig = <<'_EOC_';
     location /t {
