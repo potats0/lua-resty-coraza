@@ -41,3 +41,6 @@ local inPtr  = ffi.new("char*[1]", inStr);
 3. 因为在调用go的时候，go并没有转换`char *`到go中string，只是单纯做了类型转换。也就是说，在调用期间一定要保证lua字符串不会被free，不然go中很有可能产生UAF漏洞。但是好在lua vm会自动管理内存，这点不必担心
 
 4. 编译好的动态共享库，macos放到`/usr/local/lib/libcoraza.dylib` linux同样也在`/usr/local/lib/libcoraza.so`
+
+5. 如何测试？
+在根目录下，执行`prove -t` 就行。具体请参考test::nginx测试框架，记得在测试之前，添加openresty的环境变量，例如`export PATH=/opt/homebrew/Cellar/openresty/1.21.4.1_2/nginx/sbin:$PATH`
