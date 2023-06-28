@@ -19,7 +19,7 @@ end
 
 local ok, coraza = pcall(ffi.load, "/usr/local/lib/libcoraza.dylib")
 if ok ~= true then
-    ok, coraza = pcall(ffi.load, "libcoraza.so")
+    ok, coraza = pcall(ffi.load, "/usr/local/lib/libcoraza.so")
     if ok ~= true then
         nlog(log.err_fmt("Unable to load libcoraza, exiting! %s\n----", debug.traceback()))
         return
