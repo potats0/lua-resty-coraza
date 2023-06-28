@@ -1,2 +1,4 @@
 t/servroot
 *.log
+.vscode
+.idea
