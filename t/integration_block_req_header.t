@@ -17,6 +17,7 @@ our $LocationConfig = <<'_EOC_';
             access_by_lua_block {
             local coraza = require "resty.coraza"
             coraza.do_access_filter()
+            coraza.do_interrupt()
         }
 
         content_by_lua_block {
@@ -26,6 +27,7 @@ our $LocationConfig = <<'_EOC_';
         header_filter_by_lua_block{
             local coraza = require "resty.coraza"
             coraza.do_header_filter()
+            coraza.do_interrupt()
         }
 
         log_by_lua_block{

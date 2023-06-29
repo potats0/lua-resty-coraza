@@ -50,7 +50,7 @@ function _M.do_access_filter()
     request.build_and_process_body(transaction)
 
     ngx_ctx.action, ngx_ctx.status_code = coraza.intervention(transaction)
-    _M.do_handle()
+
 end
 
 function _M.do_free()
@@ -67,15 +67,10 @@ function _M.do_handle()
     -- If request has disrupted by coraza, the transaction is freed and set to nil.
     -- Response which was disrupted doesn't make sense.
     if ngx_ctx.action ~= nil and ngx_ctx.transaction ~= nil then
-        nlog(warn_fmt([[Transaction %s request: "%s" is interrupted by policy. Action is %s]],
-                ngx_ctx.request_id, ngx_var.request, ngx_ctx.action))
+        nlog(warn_fmt([[Transaction %s request: "%s" is interrupted by policy. Action is %s]], ngx_ctx.request_id, ngx_var.request, ngx_ctx.action))
         if ngx_ctx.action == "drop" then
-            ngx.status = ngx_ctx.status_code
-            local ok, msg = pcall(ngx.say, fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code))
-            if ok == false then
-                nlog(err_fmt(msg))
-            end
-            return ngx.exit(ngx.status)
+            ngx_ctx.is_disrupted = true
+            return ngx_ctx.status_code, fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code)
             -- TODO: disrupted by more action
             --elseif ngx_ctx.action == "deny" then
             --    ngx.status = ngx_ctx.status_code
@@ -87,11 +82,39 @@ function _M.do_handle()
     end
 end
 
+function _M.do_interrupt()
+    -- transaction is interrupted by policy, be free firstly.
+    -- If request has disrupted by coraza, the transaction is freed and set to nil.
+    -- Response which was disrupted doesn't make sense.
+    if ngx_ctx.is_disrupted == true and ngx.get_phase() == "header_filter" then
+        nlog(debug_fmt("Transaction %s has been disrupted at request phrase. ignore", 
+        ngx_ctx.request_id))
+        return
+    end
+    local status_code, block_msg = _M.do_handle()
+    if status_code ~= nil then
+        ngx.status = ngx_ctx.status_code
+        local ok, msg = pcall(ngx.say, block_msg)
+        if ok == false then
+            nlog(err_fmt(msg))
+        end
+        return ngx.exit(ngx.status)
+        -- TODO: disrupted by more action
+        -- elseif ngx_ctx.action == "deny" then
+        -- ngx.status = ngx_ctx.status_code
+        ---- NYI: cannot call this C function (yet)
+        ---- ngx.header.content_type = consts.BLOCK_CONTENT_TYPE
+        -- ngx.say(fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code))
+        -- eturn ngx.exit(ngx.status)
+    end
+end
+
 function _M.do_header_filter()
-    if ngx_ctx.action ~= nil then
+    if ngx_ctx.is_disrupted == true then
         -- If request was interrupted by coraza at access_by_lua phrase, the ngx_ctx.transaction will be set nil.
         -- We can bypass the check.
-        nlog(debug_fmt("Transaction %s has been disrupted at request phrase. ignore", ngx_ctx.request_id))
+        nlog(debug_fmt("Transaction %s has been disrupted at request phrase. ignore", 
+        ngx_ctx.request_id))
         return
     end
     local h = ngx.resp.get_headers(0, true)
@@ -112,7 +135,6 @@ function _M.do_header_filter()
     --coraza.process_response_body(ngx_ctx.transaction)
 
     ngx_ctx.action, ngx_ctx.status_code = coraza.intervention(ngx_ctx.transaction)
-    _M.do_handle()
 end
 
 return _M
