@@ -17,14 +17,24 @@ local cast_to_c_char = function(str)
     return ffi.cast("char *", str)
 end
 
-local ok, coraza = pcall(ffi.load, "/usr/local/lib/libcoraza.dylib")
-if ok ~= true then
-    ok, coraza = pcall(ffi.load, "/usr/local/lib/libcoraza.so")
-    if ok ~= true then
-        nlog(log.err_fmt("Unable to load libcoraza, exiting! %s\n----", debug.traceback()))
-        return
-    end
+-- Contains the target OS name: "Windows", "Linux", "OSX", "BSD", "POSIX" or "Other".
+local os_name = ffi.os
+if os_name ~= "OSX" and os_name ~= "Linux" then
+    nlog(log.err_fmt("Now, the lua_resty_coraza supports Linux or MacOs"))
+    nlog(log.err_fmt("%s unsupported platform, exiting! %s\n----", os_name, debug.traceback()))
+else 
+    nlog(log.debug_fmt("platform %s , loading libcoraza...", os_name))
 end
+
+local prefixed_shared_lib = "/usr/local/lib/libcoraza"
+local shared_lib_name = os_name == "Linux" and ".so" or ".dylib"
+local ok, coraza = pcall(ffi.load, prefixed_shared_lib..shared_lib_name)
+if ok ~= true then
+    nlog(log.err_fmt("failed to load libcoraza %s , exiting! %s\n----",
+    prefixed_shared_lib..shared_lib_name, debug.traceback()))
+    return
+end
+nlog(log.debug_fmt("loading libcoraza with %s successfully", prefixed_shared_lib..shared_lib_name))
 
 ffi.cdef [[
 typedef struct coraza_intervention_t
