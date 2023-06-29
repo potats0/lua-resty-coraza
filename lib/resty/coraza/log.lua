@@ -15,7 +15,9 @@ local WARN = ngx.WARN
 local DEBUG = ngx.DEBUG
 
 local function log(formatstring, ...)
-    return fmt(ngx.get_phase().." phrase ".."lua-resty-coraza: "..formatstring, ...)
+    return fmt("PID: "..ngx.worker.pid()..
+              "\tphrase: "..ngx.get_phase()..
+              "\tlua-resty-coraza: "..formatstring, ...)
 end
 
 function _M.err_fmt(formatstring, ...)
