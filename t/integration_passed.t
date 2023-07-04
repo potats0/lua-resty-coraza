@@ -7,7 +7,7 @@ our $HttpConfig = <<'_EOC_';
     lua_need_request_body on;
     init_worker_by_lua_block{
             local coraza = require "resty.coraza"
-            coraza.do_init()
+            waf = coraza.do_init()
    }
 _EOC_
 
@@ -15,7 +15,7 @@ our $LocationConfig = <<'_EOC_';
     location /t {
             access_by_lua_block {
             local coraza = require "resty.coraza"
-            coraza.do_access_filter()
+            coraza.do_access_filter(waf)
             coraza.do_interrupt()
         }
 

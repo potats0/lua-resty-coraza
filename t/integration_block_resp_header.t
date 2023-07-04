@@ -7,8 +7,8 @@ our $HttpConfig = <<'_EOC_';
     lua_need_request_body on;
     init_worker_by_lua_block{
             local coraza = require "resty.coraza"
-            coraza.do_init()
-            coraza.rules_add([[SecRule RESPONSE_HEADERS:Content-Type "text" "phase:3, id:4,drop,status:451,log,msg:'Blocked content-type'"]])
+            waf = coraza.do_init()
+            coraza.rules_add(waf, [[SecRule RESPONSE_HEADERS:Content-Type "text" "phase:3, id:4,drop,status:451,log,msg:'Blocked content-type'"]])
     }
 _EOC_
 
@@ -16,7 +16,7 @@ our $LocationConfig = <<'_EOC_';
     location /t {
             access_by_lua_block {
             local coraza = require "resty.coraza"
-            coraza.do_access_filter()
+            coraza.do_access_filter(waf)
             coraza.do_interrupt()
         }
 
