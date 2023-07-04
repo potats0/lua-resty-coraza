@@ -113,7 +113,9 @@ function _M.rules_add_file(waf, conf_file)
     -- extern int coraza_rules_add_file(coraza_waf_t w, char* file, char** er);
     local code = coraza.coraza_rules_add_file(waf, cast_to_c_char(conf_file), err_Ptr)
     if code == 0 then
-        nlog(err_fmt(ffi.string(err_Ptr[0])))
+        local err_log = ffi.string(err_Ptr[0])
+        nlog(err_fmt(err_log))
+        return false, err_log
     else
         nlog(debug_fmt("Success to load rule file with %s", conf_file))
     end
@@ -123,7 +125,9 @@ function _M.rules_add(waf, rule)
     -- extern int coraza_rules_add(coraza_waf_t w, char* directives, char** er);
     local code = coraza.coraza_rules_add(waf, cast_to_c_char(rule), err_Ptr)
     if code == 0 then
-        nlog(err_fmt(ffi.string(err_Ptr[0])))
+        local err_log = ffi.string(err_Ptr[0])
+        nlog(err_fmt(err_log))
+        return false, err_log
     else
         nlog(debug_fmt("Success to load rule with %s", rule))
     end

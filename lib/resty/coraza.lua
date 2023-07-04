@@ -22,11 +22,11 @@ function _M.do_init()
 end
 
 function _M.rules_add_file(file)
-    coraza.rules_add_file(_M.waf, file)
+    return coraza.rules_add_file(_M.waf, file)
 end
 
 function _M.rules_add(directives)
-    coraza.rules_add(_M.waf, directives)
+    return coraza.rules_add(_M.waf, directives)
 end
 
 function _M.do_access_filter()
