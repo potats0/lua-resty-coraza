@@ -35,6 +35,7 @@ our $LocationConfig = <<'_EOC_';
 
         log_by_lua_block{
             local coraza = require "resty.coraza"
+            coraza.do_log()
             coraza.do_free()
         }
     }

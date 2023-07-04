@@ -32,6 +32,7 @@ our $LocationConfig = <<'_EOC_';
 
         log_by_lua_block{
             local coraza = require "resty.coraza"
+            coraza.do_log()
             coraza.do_free()
         }
     }
@@ -49,7 +50,7 @@ __DATA__
 --- more_headers
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.44
 --- request
-POST /t/shell.php
+POST /t/shell.php?a=11
 aaaaaaaaa=aaaaaa
 --- error_code: 452
 --- response_body_like eval
