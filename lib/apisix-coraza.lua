@@ -19,27 +19,20 @@ local core_log = core.log
 local coraza = require "resty.coraza"
 
 
-
 local schema = {
     type = "object",
     properties = {
-        Mode = {
-            description = "waf running at block mode or monitor mode",
+        mode = {
+            description = "waf running at block mode or monitor mode.",
             type = "string"
         },
-        Rules = {
-            type = "array",
-            items = {
-                type = "string",
-                minLength = 1,
-                maxLength = 4096,
-            },
-            uniqueItems = true
+        rules = {
+            description = "self waf rules.",
+            type = "array"
         },
     },
-    required = {"Mode"},
+    required = {"mode"},
 }
-
 
 local plugin_name = "apisix-coraza"
 
@@ -52,12 +45,20 @@ local _M = {
 
 function _M.check_schema(conf)
     core.log.info("check coraza schema")
-    if conf.Rules ~= nil then
-        for i, rule in ipairs(conf.Rules) do
-            coraza.rules_add(rule)
+    local ok, err = core.schema.check(schema, conf)
+    if not ok then
+        return false, err
+    end
+    if conf.rules ~= nil then
+        for i, rule in ipairs(conf.rules) do
+            local ok, msg = coraza.rules_add(rule)
+	    ngx.log(ngx.ERR, ok)
+	    if not ok then
+		    return false, rule..msg
+	    end
         end
     end
-    return core.schema.check(schema, conf)
+    return true
 end
 
 function _M.init()
@@ -75,7 +76,6 @@ end
 
 function _M.header_filter(conf, ctx)
     core.log.info("plugin access phase, conf: ", core.json.delay_encode(conf))
-    -- each connection will be created a transaction
     coraza.do_header_filter()
     ngx.status, _ = coraza.do_handle()
     core.response.clear_header_as_body_modified()
