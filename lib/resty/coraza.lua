@@ -124,17 +124,11 @@ function _M.do_header_filter()
     -- copy from https://github.com/SpiderLabs/ModSecurity-nginx/blob/d59e4ad121df702751940fd66bcc0b3ecb51a079/src/ngx_http_modsecurity_header_filter.c#L527
     coraza.process_response_headers(ngx_ctx.transaction, ngx.status, "HTTP 1.1")
 
-    -- TODO: add http response body to coraza.append_response_body. Openresty can't disrupt the body_filter phrase
-    --local resp_body = string.sub(ngx.arg[1], 1, 1000)
-    --ngx.ctx.buffered = (ngx.ctx.buffered or "") .. resp_body
-    --if ngx.arg[2] then
-    --    ngx.var.resp_body = ngx.ctx.buffered
-    --end
-    --
-    --coraza.append_response_body(ngx_ctx.transaction, ngx.ctx.buffered)
-    --coraza.process_response_body(ngx_ctx.transaction)
-
     ngx_ctx.action, ngx_ctx.status_code = coraza.intervention(ngx_ctx.transaction)
+end
+
+function _M.do_body_filter()
+    -- TODO
 end
 
 function _M.do_log()
