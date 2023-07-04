@@ -90,7 +90,8 @@ extern int coraza_free_transaction(coraza_transaction_t t);
 extern int coraza_free_intervention(coraza_intervention_t* it);
 extern int coraza_free_waf(coraza_waf_t t);
 extern coraza_intervention_t* coraza_intervention(coraza_transaction_t tx);
-
+extern char* coraza_get_matched_logmsg(coraza_transaction_t t);
+extern int coraza_free_matched_logmsg(char* t);
 ]]
 
 local _M = {
@@ -324,6 +325,13 @@ function _M.process_response_body(transaction)
         nlog(debug_fmt("Transaction %s uccess to invoke coraza_process_response_body",
                 ngx_ctx.request_id))
     end
+end
+
+function _M.get_matched_logmsg(transaction)
+    local c_str = coraza.coraza_get_matched_logmsg(transaction)
+    local res = ffi.string(c_str)
+    coraza.coraza_free_matched_logmsg(c_str)
+    return res
 end
 
 return _M

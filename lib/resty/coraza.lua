@@ -137,4 +137,10 @@ function _M.do_header_filter()
     ngx_ctx.action, ngx_ctx.status_code = coraza.intervention(ngx_ctx.transaction)
 end
 
+function _M.do_log()
+    local msg = coraza.get_matched_logmsg(ngx_ctx.transaction)
+    ngx_ctx.coraza_msg = msg
+
+end
+
 return _M
