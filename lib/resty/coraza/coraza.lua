@@ -109,6 +109,13 @@ function _M.new_waf()
     return waf
 end
 
+function _M.free_waf(waf)
+    -- extern int coraza_free_waf(coraza_waf_t t);
+    local waf = coraza.coraza_free_waf(waf)
+    nlog(debug_fmt("Success to free new waf"))
+    return waf
+end
+
 function _M.rules_add_file(waf, conf_file)
     -- extern int coraza_rules_add_file(coraza_waf_t w, char* file, char** er);
     local code = coraza.coraza_rules_add_file(waf, cast_to_c_char(conf_file), err_Ptr)

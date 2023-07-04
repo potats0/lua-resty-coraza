@@ -18,20 +18,24 @@ local _M = {
 }
 
 function _M.do_init()
-    _M.waf = coraza.new_waf()
+    return coraza.new_waf()  
 end
 
-function _M.rules_add_file(file)
-    return coraza.rules_add_file(_M.waf, file)
+function _M.do_free_waf(waf)
+    return coraza.free_waf(waf)
 end
 
-function _M.rules_add(directives)
-    return coraza.rules_add(_M.waf, directives)
+function _M.rules_add_file(waf, file)
+    return coraza.rules_add_file(waf, file)
 end
 
-function _M.do_access_filter()
+function _M.rules_add(waf, directives)
+    return coraza.rules_add(waf, directives)
+end
+
+function _M.do_access_filter(waf)
     -- each connection will be created a transaction
-    local transaction = coraza.new_transaction(_M.waf)
+    local transaction = coraza.new_transaction(waf)
     ngx_ctx.transaction = transaction
 
     coraza.process_connection(transaction, ngx_var.remote_addr,  ngx_var.remote_port,
