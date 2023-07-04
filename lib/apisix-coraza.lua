@@ -52,8 +52,10 @@ local _M = {
 
 function _M.check_schema(conf)
     core.log.info("check coraza schema")
-    for i, rule in ipairs(conf.Rules) do
-        coraza.rules_add(rule)
+    if conf.Rules ~= nil then
+        for i, rule in ipairs(conf.Rules) do
+            coraza.rules_add(rule)
+        end
     end
     return core.schema.check(schema, conf)
 end
