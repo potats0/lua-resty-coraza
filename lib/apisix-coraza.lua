@@ -23,13 +23,23 @@ local coraza = require "resty.coraza"
 local schema = {
     type = "object",
     properties = {
-        body = {
-            description = "coraza waf plugins.",
+        Mode = {
+            description = "waf running at block mode or monitor mode",
             type = "string"
         },
+        Rules = {
+            type = "array",
+            items = {
+                type = "string",
+                minLength = 1,
+                maxLength = 4096,
+            },
+            uniqueItems = true
+        },
     },
-    required = {"body"},
+    required = {"Mode"},
 }
+
 
 local plugin_name = "apisix-coraza"
 
@@ -41,7 +51,10 @@ local _M = {
 }
 
 function _M.check_schema(conf)
-    core.log.error("check coraza schema")
+    core.log.info("check coraza schema")
+    for i, rule in ipairs(conf.Rules) do
+        coraza.rules_add(rule)
+    end
     return core.schema.check(schema, conf)
 end
 
@@ -49,7 +62,6 @@ function _M.init()
     -- call this function when plugin is loaded
     core_log.info("coraza init")
     coraza.do_init()
-    coraza.rules_add([[SecRule REQUEST_HEADERS:User-Agent "Mozilla" "phase:1, id:3,drop,status:452,log,msg:'Blocked User-Agent'"]])
 end
 
 function _M.access(conf, ctx)
