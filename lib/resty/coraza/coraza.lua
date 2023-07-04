@@ -329,9 +329,17 @@ end
 
 function _M.get_matched_logmsg(transaction)
     local c_str = coraza.coraza_get_matched_logmsg(transaction)
+    nlog(debug_fmt("Transaction %s uccess to invoke coraza_get_matched_logmsg",
+    ngx_ctx.request_id))
     local res = ffi.string(c_str)
     coraza.coraza_free_matched_logmsg(c_str)
     return res
+end
+
+function _M.process_logging(transaction)
+    coraza.coraza_process_logging(transaction)
+    nlog(debug_fmt("Transaction %s uccess to invoke coraza_process_logging",
+                ngx_ctx.request_id))
 end
 
 return _M

@@ -132,6 +132,7 @@ function _M.do_body_filter()
 end
 
 function _M.do_log()
+    coraza.process_logging()
     local msg = coraza.get_matched_logmsg(ngx_ctx.transaction)
     ngx_ctx.coraza_msg = msg
 
