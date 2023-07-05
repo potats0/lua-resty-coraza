@@ -52,10 +52,9 @@ function _M.check_schema(conf)
     if conf.rules ~= nil then
         for i, rule in ipairs(conf.rules) do
             local ok, msg = coraza.rules_add(rule)
-	    ngx.log(ngx.ERR, ok)
-	    if not ok then
-		    return false, rule..msg
-	    end
+            if not ok then
+                return false, rule.."\t"..msg
+            end
         end
     end
     return true
@@ -64,12 +63,13 @@ end
 function _M.init()
     -- call this function when plugin is loaded
     core_log.info("coraza init")
-    coraza.do_init()
+    _M.waf = coraza.create_waf()
 end
 
 function _M.access(conf, ctx)
     core.log.info("plugin access phase, conf: ", core.json.delay_encode(conf))
     -- each connection will be created a transaction
+    coraza.do_create_transaction(_M.waf)
     coraza.do_access_filter()
     return coraza.do_handle()
 end
@@ -83,12 +83,13 @@ end
 
 function _M.destroy()
     core.log.info("coraza destroy")
+    coraza.free_waf(_M.waf)
 end
 
 
 function _M.log(conf, ctx)
     coraza.do_log()
-    coraza.do_free()
+    coraza.do_free_transaction()
 end
 
 return _M

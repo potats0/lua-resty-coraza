@@ -17,11 +17,11 @@ local _M = {
     _VERSION = '1.0.0'
 }
 
-function _M.do_init()
+function _M.create_waf()
     return coraza.new_waf()  
 end
 
-function _M.do_free_waf(waf)
+function _M.free_waf(waf)
     return coraza.free_waf(waf)
 end
 
@@ -33,10 +33,8 @@ function _M.rules_add(waf, directives)
     return coraza.rules_add(waf, directives)
 end
 
-function _M.do_access_filter(waf)
-    -- each connection will be created a transaction
-    local transaction = coraza.new_transaction(waf)
-    ngx_ctx.transaction = transaction
+function _M.do_access_filter()
+    local transaction = ngx_ctx.transaction
 
     coraza.process_connection(transaction, ngx_var.remote_addr,  ngx_var.remote_port,
             ngx_var.server_addr, ngx_var.server_port)
@@ -57,7 +55,12 @@ function _M.do_access_filter(waf)
 
 end
 
-function _M.do_free()
+function _M.do_create_transaction(waf)
+    -- each connection will be created a transaction
+    ngx_ctx.transaction = coraza.new_transaction(waf)
+end
+
+function _M.do_free_transaction()
     local transaction = ngx_ctx.transaction
     if transaction ~= nil then
         nlog(debug_fmt("transaction %s is freed by coraza_free_transaction", ngx_ctx.request_id))

@@ -7,7 +7,7 @@ our $HttpConfig = <<'_EOC_';
     lua_need_request_body on;
     init_worker_by_lua_block{
             coraza = require "resty.coraza"
-            waf = coraza.do_init()
+            waf = coraza.create_waf()
             coraza.rules_add(waf, [[SecRule REQUEST_HEADERS:User-Agent "Mozilla" "phase:1, id:3,drop,status:452,log,msg:'Blocked User-Agent'"]])
     }
 _EOC_
@@ -15,7 +15,8 @@ _EOC_
 our $LocationConfig = <<'_EOC_';
     location /t {
         access_by_lua_block {
-            coraza.do_access_filter(waf)
+            coraza.do_create_transaction(waf)
+            coraza.do_access_filter()
             coraza.do_interrupt()
         }
 
@@ -30,7 +31,7 @@ our $LocationConfig = <<'_EOC_';
 
         log_by_lua_block{
             coraza.do_log()
-            coraza.do_free()
+            coraza.do_free_transaction()
         }
     }
 _EOC_
