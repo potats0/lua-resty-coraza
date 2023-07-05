@@ -111,9 +111,8 @@ end
 
 function _M.free_waf(waf)
     -- extern int coraza_free_waf(coraza_waf_t t);
-    local waf = coraza.coraza_free_waf(waf)
+    coraza.coraza_free_waf(waf)
     nlog(debug_fmt("Success to free new waf"))
-    return waf
 end
 
 function _M.rules_add_file(waf, conf_file)
