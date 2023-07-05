@@ -6,9 +6,10 @@ our $HttpConfig = <<'_EOC_';
     lua_code_cache on;
     lua_need_request_body on;
     init_worker_by_lua_block{
-            local coraza = require "resty.coraza"
+            coraza = require "resty.coraza"
             waf = coraza.do_init()
             coraza.rules_add_file(waf, "%s/t/coraza.conf")
+            coraza.rules_add(waf, "Include %s/t/coreruleset/crs-setup.conf.example")
             coraza.rules_add(waf, "Include %s/t/coreruleset/rules/*.conf")
     }
 _EOC_
@@ -17,8 +18,7 @@ $HttpConfig = sprintf($HttpConfig, $ENV{PWD}, $ENV{PWD});
 
 our $LocationConfig = <<'_EOC_';
     location /t {
-            access_by_lua_block {
-            local coraza = require "resty.coraza"
+        access_by_lua_block {
             coraza.do_access_filter(waf)
             coraza.do_interrupt()
         }
@@ -28,13 +28,11 @@ our $LocationConfig = <<'_EOC_';
         }
 
         header_filter_by_lua_block{
-            local coraza = require "resty.coraza"
             coraza.do_header_filter()
             coraza.do_interrupt()
         }
 
         log_by_lua_block{
-            local coraza = require "resty.coraza"
             coraza.do_log()
             coraza.do_free()
         }
