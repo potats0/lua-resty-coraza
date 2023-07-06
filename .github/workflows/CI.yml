@@ -20,11 +20,11 @@ jobs:
       with:
         repository: potats0/coraza
         path: libcoraza
-        ref: refs/heads/release
+        ref: master
 
     - name: Build and Install
       run: |
-        cd coraza
+        cd libcoraza
         ./build.sh
         ./configure
         make
