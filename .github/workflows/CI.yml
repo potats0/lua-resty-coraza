@@ -20,7 +20,6 @@ jobs:
       with:
         repository: potats0/coraza
         path: libcoraza
-        ref: master
 
     - name: Build and Install
       run: |
