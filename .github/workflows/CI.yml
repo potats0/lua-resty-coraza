@@ -28,8 +28,8 @@ jobs:
         ./configure
         make
         sudo make install
-        cpan Test::Nginx
-        cpan Test::Nginx::Socket
+        sudo cpan Test::Nginx
+        sudo cpan Test::Nginx::Socket
         
     - name: Setup openresty
       uses: leafo/gh-actions-openresty@v1
