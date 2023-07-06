@@ -14,13 +14,22 @@ jobs:
       uses: actions/setup-go@master
       with:
         go-version: 1.20.4
+        
+    - name: Clone libcoraza-nginx repository
+      uses: actions/checkout@v2
+      with:
+        repository: potats0/coraza
+        path: libcoraza
 
-    - name: Build and Install
+    - name: Install build dependencies
       run: |
-        cd coraza
-        ./build.sh configure
+        cd libcoraza
+        ./build.sh
+        ./configure
         make
         sudo make install
+        sudo cpan -T Test::Nginx
+        sudo cpan -T Test::Nginx::Socket
         
     - name: Setup openresty
       uses: leafo/gh-actions-openresty@v1
@@ -28,4 +37,7 @@ jobs:
         openrestyVersion: "1.21.4.1"
 
     - name: run test::Nginx
-      run: resty -e 'print("hi from lua")'
+      run: |
+          export PATH=/usr/local/openresty/nginx/sbin:$PATH
+          openresty -v
+          prove -t
