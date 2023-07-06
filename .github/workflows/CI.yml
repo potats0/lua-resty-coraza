@@ -21,8 +21,9 @@ jobs:
         ./build.sh configure
         make
         sudo make install
+        
     - name: Setup openresty
-    - uses: leafo/gh-actions-openresty@v1
+      uses: leafo/gh-actions-openresty@v1
       with:
         openrestyVersion: "1.21.4.1"
 
