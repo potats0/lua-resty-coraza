@@ -21,13 +21,15 @@ jobs:
         repository: potats0/coraza
         path: libcoraza
 
-    - name: Build and Install
+    - name: Install build dependencies
       run: |
         cd libcoraza
         ./build.sh
         ./configure
         make
         sudo make install
+        cpan Test::Nginx
+        cpan Test::Nginx::Socket
         
     - name: Setup openresty
       uses: leafo/gh-actions-openresty@v1
