@@ -38,6 +38,6 @@ jobs:
 
     - name: run test::Nginx
       run: |
-          whereis openresty
-          export PATH=/usr/local/openresty/bin:$PATH
-          prove -t
+          export PATH=/usr/local/openresty/nginx/sbin:$PATH
+          openresty -v
+          sudo prove -t
