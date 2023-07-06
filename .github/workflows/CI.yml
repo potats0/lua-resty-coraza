@@ -14,11 +14,19 @@ jobs:
       uses: actions/setup-go@master
       with:
         go-version: 1.20.4
+        
+    - name: Clone libcoraza-nginx repository
+      uses: actions/checkout@v2
+      with:
+        repository: potats0/coraza
+        path: libcoraza
+        ref: refs/heads/release
 
     - name: Build and Install
       run: |
         cd coraza
-        ./build.sh configure
+        ./build.sh
+        ./configure
         make
         sudo make install
         
