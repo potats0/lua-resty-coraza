@@ -40,4 +40,4 @@ jobs:
       run: |
           export PATH=/usr/local/openresty/nginx/sbin:$PATH
           openresty -v
-          sudo prove -t
+          prove -t
