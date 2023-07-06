@@ -8,15 +8,12 @@ jobs:
 
     steps:
     - name: Clone repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@master
 
     - name: Setup Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@master
       with:
-        go-version: 1.15
-
-    - name: Install build dependencies
-      run: sudo apt-get update && sudo apt-get install -y openresty 
+        go-version: 1.20.4
 
     - name: Build and Install
       run: |
@@ -24,8 +21,10 @@ jobs:
         ./build.sh configure
         make
         sudo make install
+    - name: Setup openresty
+    - uses: leafo/gh-actions-openresty@v1
+      with:
+        openrestyVersion: "1.21.4.1"
 
-    - name: Run Tests
-      run: |
-        cd test
-        prove -t 
+    - name: run test::Nginx
+      run: resty -e 'print("hi from lua")'
