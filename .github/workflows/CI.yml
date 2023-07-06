@@ -28,8 +28,8 @@ jobs:
         ./configure
         make
         sudo make install
-        sudo cpan Test::Nginx
-        sudo cpan Test::Nginx::Socket
+        sudo cpan -T Test::Nginx
+        sudo cpan -T Test::Nginx::Socket
         
     - name: Setup openresty
       uses: leafo/gh-actions-openresty@v1
@@ -37,4 +37,7 @@ jobs:
         openrestyVersion: "1.21.4.1"
 
     - name: run test::Nginx
-      run: prove -t
+      run: |
+          whereis openresty
+          export PATH=/usr/local/openresty/bin:$PATH
+          prove -t
