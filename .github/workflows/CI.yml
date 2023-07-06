@@ -35,4 +35,4 @@ jobs:
         openrestyVersion: "1.21.4.1"
 
     - name: run test::Nginx
-      run: resty -e 'print("hi from lua")'
+      run: prove -t
