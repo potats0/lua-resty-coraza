@@ -5,11 +5,32 @@
 Lua implementation of the [libcoraza](https://github.com/corazawaf/libcoraza) for modsecurity Web Application Firewall.
 
 
-## Installation
+## dependence
 
-```bash
-luarocks install lua-resty-t1k
+### 1. libcoraza-nginx
+1. clone the repository
+`git clone https://github.com/potats0/coraza.git`
+
+2. Build the source && Installation
 ```
+cd coraza
+./build.sh
+./configure
+make
+sudo make install
+```
+`libcoraza.so` will be installed at `/usr/local/lib`
+
+### 2. Coreruleset
+coreruleset is an opensource waf rules.
+1. clone the repository
+`git clone https://github.com/coreruleset/coreruleset`
+
+### 3. lua-resty-coraza
+```bash
+opm get potats0/lua-resty-coraza
+```
+
 
 ## Synopsis
 
