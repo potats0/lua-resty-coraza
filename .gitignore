@@ -2,3 +2,4 @@ t/servroot
 *.log
 .vscode
 .idea
+*.tar.gz
