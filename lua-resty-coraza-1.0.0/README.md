@@ -7,28 +7,8 @@ Lua implementation of the [libcoraza](https://github.com/corazawaf/libcoraza) fo
 
 ## Installation
 
-### dependence
-#### 1. libcoraza-nginx
-1. clone the repository
-`git clone https://github.com/potats0/coraza.git`
-
-2. Build the source && Installation
-```
-cd coraza
-./build.sh
-./configure
-make
-sudo make install
-```
-`libcoraza.so` will be installed at `/usr/local/lib`
-
-#### 2. Coreruleset
-1. clone the repository
-`git clone https://github.com/coreruleset/coreruleset`
-
-### lua-resty-coraza
 ```bash
-opm get potats0/lua-resty-coraza
+luarocks install lua-resty-t1k
 ```
 
 ## Synopsis
@@ -38,10 +18,10 @@ opm get potats0/lua-resty-coraza
 init_worker_by_lua_block{
     coraza = require "resty.coraza"
     waf = coraza.create_waf()
-    -- add custom rule based on modsecurity from file, 
+    -- add rule from file
     coraza.rules_add_file(waf, "%s/t/coraza.conf")
 
-    -- your Coreruleset, add rule from directive
+    -- your corerule set, add rule from directive
     coraza.rules_add(waf, "Include %s/t/coreruleset/crs-setup.conf.example")
     coraza.rules_add(waf, "Include %s/t/coreruleset/rules/*.conf")
 }
