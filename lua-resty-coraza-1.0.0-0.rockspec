@@ -1,8 +1,8 @@
 package = "lua-resty-coraza"
-version = "1.0.0-0"
+version = "1.0.1-0"
 source = {
     url = "https://github.com/potats0/lua-resty-coraza",
-    tag = "v1.0.0"
+    tag = "v1.0.1"
 }
 
 description = {
