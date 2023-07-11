@@ -228,6 +228,9 @@ function _M.intervention(transaction)
         local status_code = tonumber(intervention.status)
         --free intervention to avoid memory leak
         coraza.coraza_free_intervention(intervention)
+        if status_code == 0 then
+            status_code = 403
+        end
         nlog(debug_fmt("Transaction %s disrupted with status %s action %s",
                 ngx_ctx.request_id, status_code, action))
         return action, status_code
