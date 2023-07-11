@@ -75,16 +75,9 @@ function _M.do_handle()
     -- Response which was disrupted doesn't make sense.
     if ngx_ctx.action ~= nil and ngx_ctx.transaction ~= nil then
         nlog(warn_fmt([[Transaction %s request: "%s" is interrupted by policy. Action is %s]], ngx_ctx.request_id, ngx_var.request, ngx_ctx.action))
-        if ngx_ctx.action == "drop" then
+        if ngx_ctx.action == "drop" or ngx_ctx.action == "deny" then
             ngx_ctx.is_disrupted = true
             return ngx_ctx.status_code, fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code)
-            -- TODO: disrupted by more action
-            --elseif ngx_ctx.action == "deny" then
-            --    ngx.status = ngx_ctx.status_code
-            --    -- NYI: cannot call this C function (yet)
-            --    -- ngx.header.content_type = consts.BLOCK_CONTENT_TYPE
-            --    ngx.say(fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code))
-            --    return ngx.exit(ngx.status)
         end
     end
 end
@@ -106,13 +99,6 @@ function _M.do_interrupt()
             nlog(err_fmt(msg))
         end
         return ngx.exit(ngx.status)
-        -- TODO: disrupted by more action
-        -- elseif ngx_ctx.action == "deny" then
-        -- ngx.status = ngx_ctx.status_code
-        ---- NYI: cannot call this C function (yet)
-        ---- ngx.header.content_type = consts.BLOCK_CONTENT_TYPE
-        -- ngx.say(fmt(consts.BLOCK_CONTENT_FORMAT, ngx_ctx.status_code))
-        -- eturn ngx.exit(ngx.status)
     end
 end
 
