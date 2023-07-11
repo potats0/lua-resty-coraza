@@ -126,8 +126,6 @@ end
 
 function _M.do_log()
     coraza.process_logging(ngx_ctx.transaction)
-    local msg = coraza.get_matched_logmsg(ngx_ctx.transaction)
-    ngx_ctx.coraza_msg = msg
 
 end
 
