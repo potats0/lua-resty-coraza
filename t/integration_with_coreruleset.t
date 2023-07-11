@@ -63,3 +63,10 @@ aaaaaaaaa=aaaaaa
 POST /t/shell.php?injection=/etc/passwd
 aaaaaaaaa=aaaaaa
 --- error_code: 403
+
+=== TEST 3: integration test blocked with no post data
+--- http_config eval: $::HttpConfig
+--- config eval: $::LocationConfig
+--- request
+GET /t/shell.php?injection=/etc/passwd
+--- error_code: 403

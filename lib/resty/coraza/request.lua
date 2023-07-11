@@ -25,15 +25,10 @@ end
 
 function _M.build_and_process_body(transaction)
     local req_body = ngx_req.get_body_data()
-    if not req_body then
-        -- TODO: fix code
-        local path = ngx_req.get_body_file()
-        if not path then
-            -- end process
-            return
-        end
-        coraza.request_body_from_file(path)
-    else
+    if req_body then
+        -- TODO: fix code to process multipart/formdata
+        -- local path = ngx_req.get_body_file()
+        -- coraza.request_body_from_file(path)
         local req_body_size = #req_body
         -- TODO req_body_size > req_body_size_opt
         coraza.append_request_body(transaction, req_body)
