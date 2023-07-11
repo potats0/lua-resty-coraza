@@ -14,7 +14,7 @@ our $HttpConfig = <<'_EOC_';
     }
 _EOC_
 
-$HttpConfig = sprintf($HttpConfig, $ENV{PWD}, $ENV{PWD});
+$HttpConfig = sprintf($HttpConfig, $ENV{PWD}, $ENV{PWD}, $ENV{PWD});
 
 our $LocationConfig = <<'_EOC_';
     location /t {
@@ -46,7 +46,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: integration test blocked
+=== TEST 1: integration passed
 --- http_config eval: $::HttpConfig
 --- config eval: $::LocationConfig
 --- request
@@ -55,3 +55,11 @@ aaaaaaaaa=aaaaaa
 --- error_code: 200
 --- response_body_like eval
 "passed"
+
+=== TEST 2: integration test blocked
+--- http_config eval: $::HttpConfig
+--- config eval: $::LocationConfig
+--- request
+POST /t/shell.php?injection=/etc/passwd
+aaaaaaaaa=aaaaaa
+--- error_code: 403
