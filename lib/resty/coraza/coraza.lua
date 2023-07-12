@@ -7,8 +7,6 @@ local ffi = require "ffi"
 local log = require "resty.coraza.log"
 
 local nlog = ngx.log
-local ngx_var = ngx.var
-local ngx_ctx = ngx.ctx
 
 local err_fmt = log.err_fmt
 local debug_fmt = log.debug_fmt
@@ -143,78 +141,84 @@ function _M.new_transaction(waf)
     -- checking whether the transaction objects are correctly released or not.
     -- In end of process, or intervention.
     -- extern coraza_transaction_t coraza_new_transaction(coraza_waf_t waf, void* logCb);
-    local res = coraza.coraza_new_transaction(waf, nil)
-    ngx_ctx.request_id = ngx_var.request_id
-    nlog(debug_fmt("Success to creat new transaction id %s", ngx_ctx.request_id))
-    return res
+    local ok, msg = pcall(coraza.coraza_new_transaction, waf, nil)
+    if ok then
+        ngx.ctx.request_id = ngx.var.request_id
+        nlog(debug_fmt("Success to creat new transaction id %s",
+            ngx.ctx.request_id))
+        return msg
+    else
+        nlog(debug_fmt("Failed to creat new transaction id %s, msg: %s",
+            ngx.ctx.request_id, msg))
+    end
 end
 
 function _M.process_connection(transaction, sourceAddress, clientPort, serverHost, serverPort)
     -- extern int coraza_process_connection(coraza_transaction_t t, char* sourceAddress, int clientPort,
     -- char* serverHost, int serverPort);
-    local res = coraza.coraza_process_connection(transaction, cast_to_c_char(sourceAddress),
+    local ok, msg = pcall(coraza.coraza_process_connection, transaction, cast_to_c_char(sourceAddress),
             tonumber(clientPort), cast_to_c_char(serverHost), tonumber(serverPort))
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_connection with " ..
-                "sourceAddress:%s clientPort:%s serverHost:%s serverPort:%s",
-                ngx_ctx.request_id, sourceAddress, clientPort, serverHost, serverPort))
-    else
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_connection with " ..
-                "sourceAddress:%s clientPort:%s serverHost:%s serverPort:%s",
-                ngx_ctx.request_id, sourceAddress, clientPort, serverHost, serverPort))
+            "sourceAddress:%s clientPort:%s serverHost:%s serverPort:%s",
+            ngx.ctx.request_id, sourceAddress, clientPort, serverHost, serverPort))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_connection with " ..
+            "sourceAddress:%s clientPort:%s serverHost:%s serverPort:%s msg: %s",
+            ngx.ctx.request_id, sourceAddress, clientPort, serverHost, serverPort, msg))
     end
 end
 
 function _M.process_uri(transaction, uri, method, proto)
     -- This function won't add GET arguments, they must be added with AddArgument
     -- extern int coraza_process_uri(coraza_transaction_t t, char* uri, char* method, char* proto);
-    local res = coraza.coraza_process_uri(transaction, cast_to_c_char(uri),
+    local ok, msg = pcall(coraza.coraza_process_uri, transaction, cast_to_c_char(uri),
             cast_to_c_char(method), cast_to_c_char(proto))
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_uri with %s %s %s",
-                ngx_ctx.request_id, ngx_ctx.request_id, method, uri, proto))
-    else
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_uri with %s %s %s",
-                ngx_ctx.request_id, method, uri, proto))
+            ngx.ctx.request_id, method, uri, proto))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_uri with %s %s %s. msg: %s",
+            ngx.ctx.request_id, ngx.ctx.request_id, method, uri, proto, msg))
     end
 end
 
 function _M.add_request_header(transaction, header_name, header_value)
     -- extern int coraza_add_request_header(coraza_transaction_t t, char* name, int name_len,
     --                                      char* value, int value_len);
-    local res = coraza.coraza_add_request_header(transaction, cast_to_c_char(header_name), #header_name,
-            cast_to_c_char(header_value), #header_value)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_add_request_header with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
-    else
+    local ok, msg = pcall(coraza.coraza_add_request_header, transaction, 
+    cast_to_c_char(header_name), #header_name, cast_to_c_char(header_value), #header_value)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_add_request_header with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
+            ngx.ctx.request_id, header_name, header_value))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_add_request_header with %s:%s. msg: %s",
+            ngx.ctx.request_id, header_name, header_value, msg))
     end
 end
 
 function _M.add_get_args(transaction, header_name, header_value)
     -- extern int coraza_add_get_args(coraza_transaction_t t, char* name, char* value);
-    local res = coraza.coraza_add_get_args(transaction, cast_to_c_char(header_name),
-            cast_to_c_char(header_value))
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_add_get_args with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
-    else
+    local ok, msg  = pcall(coraza.coraza_add_get_args, transaction, 
+    cast_to_c_char(header_name), cast_to_c_char(header_value))
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_add_get_args with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
+            ngx.ctx.request_id, header_name, header_value))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_add_get_args with %s:%s. msg: %s",
+            ngx.ctx.request_id, header_name, header_value, msg))
     end
 end
 
 function _M.process_request_headers(transaction)
     -- extern int coraza_process_request_headers(coraza_transaction_t t);
-    local res = coraza.coraza_process_request_headers(transaction)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_request_headers",
-                ngx_ctx.request_id))
-    else
+    local ok, msg = pcall(coraza.coraza_process_request_headers, transaction)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_request_headers",
-                ngx_ctx.request_id))
+            ngx.ctx.request_id))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_request_headers. msg: %s",
+            ngx.ctx.request_id, msg))
     end
 end
 
@@ -230,10 +234,10 @@ function _M.intervention(transaction)
             status_code = 403
         end
         nlog(debug_fmt("Transaction %s disrupted with status %s action %s",
-                ngx_ctx.request_id, status_code, action))
+                ngx.ctx.request_id, status_code, action))
         return action, status_code
     else
-        nlog(debug_fmt("Failed to disrupt transaction %s", ngx_ctx.request_id))
+        nlog(debug_fmt("Failed to disrupt transaction %s, action is nil", ngx.ctx.request_id))
         return nil, nil
     end
 
@@ -241,107 +245,114 @@ end
 
 function _M.free_transaction(transaction)
     -- extern int coraza_free_transaction(coraza_transaction_t t);
-    local res = coraza.coraza_free_transaction(transaction)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_free_transaction",
-                ngx_ctx.request_id))
-    else
+    local ok, msg = coraza.coraza_free_transaction(transaction)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_free_transaction",
-                ngx_ctx.request_id))
+                ngx.ctx.request_id))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_free_transaction. msg: %s",
+                ngx.ctx.request_id, msg))
     end
 end
 
 function _M.append_request_body(transaction, body)
     -- extern int coraza_append_request_body(coraza_transaction_t t, unsigned char* data, int length);
-    local res = coraza.coraza_append_request_body(transaction, cast_to_c_char(body), #body)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_append_request_body with %s",
-                ngx_ctx.request_id, body))
-    else
+    local ok, msg = pcall(coraza.coraza_append_request_body, transaction, 
+                         cast_to_c_char(body), #body)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_append_request_body with %s",
-                ngx_ctx.request_id, body))
+                    ngx.ctx.request_id, body))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_append_request_body with %s. msg: %s",
+                    ngx.ctx.request_id, body, msg))
     end
 end
 
 function _M.request_body_from_file(transaction, file_path)
     -- extern int coraza_request_body_from_file(coraza_transaction_t t, char* file);
     -- return 0 if success, otherwish return 1
-    local res = coraza.coraza_request_body_from_file(transaction, cast_to_c_char(file_path))
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_request_body_from_file with %s",
-                ngx_ctx.request_id, file_path))
-    else
+    local ok, msg = pcall(coraza.coraza_request_body_from_file,
+                          transaction, cast_to_c_char(file_path))
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_request_body_from_file with %s",
-                ngx_ctx.request_id, file_path))
+                ngx.ctx.request_id, file_path))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_request_body_from_file with %s. msg: %s",
+                ngx.ctx.request_id, file_path, msg))
     end
 end
 
 function _M.process_request_body(transaction)
     -- extern int coraza_process_request_body(coraza_transaction_t t);
-    local res = coraza.coraza_process_request_body(transaction)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_request_body",
-                ngx_ctx.request_id))
-    else
+    local ok, msg = pcall(coraza.coraza_process_request_body, transaction)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_request_body",
-                ngx_ctx.request_id))
+                        ngx.ctx.request_id))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_request_body. msg: %s",
+                      ngx.ctx.request_id, msg))
     end
 end
 
 -- for processing response
-
 function _M.process_response_headers(transaction, status_code, proto)
     -- extern int coraza_process_response_headers(coraza_transaction_t t, int status, char* proto);
-    local res = coraza.coraza_process_response_headers(transaction, tonumber(status_code), cast_to_c_char(proto))
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_response_headers with %s %s",
-                ngx_ctx.request_id, status_code, proto))
-    else
+    local ok, msg = pcall(coraza.coraza_process_response_headers,transaction, 
+                         tonumber(status_code), cast_to_c_char(proto))
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_response_headers with %s %s",
-                ngx_ctx.request_id, status_code, proto))
+                        ngx.ctx.request_id, status_code, proto))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_response_headers with %s %s",
+                      ngx.ctx.request_id, status_code, proto))
     end
 end
 
 function _M.add_response_header(transaction, header_name, header_value)
     -- extern int coraza_add_response_header(coraza_transaction_t t, char* name,
     --                                       int name_len, char* value, int value_len);
-    local res = coraza.coraza_add_response_header(transaction, cast_to_c_char(header_name), #header_name,
-            cast_to_c_char(header_value), #header_value)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_add_response_header with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
-    else
+    local ok, msg = pcall(coraza.coraza_add_response_header, transaction, cast_to_c_char(header_name), #header_name, cast_to_c_char(header_value), #header_value)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_add_response_header with %s:%s",
-                ngx_ctx.request_id, header_name, header_value))
+                        ngx.ctx.request_id, header_name, header_value))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_add_response_header with %s:%s. msg: %s",
+                      ngx.ctx.request_id, header_name, header_value, msg))
     end
 end
 
 function _M.append_response_body(transaction, body)
-    local res = coraza.coraza_append_response_body(transaction, cast_to_c_char(body), #body)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_append_response_body with %s",
-                ngx_ctx.request_id, body))
-    else
+    local ok, msg = pcall(coraza.coraza_append_response_body, transaction, 
+                          cast_to_c_char(body), #body)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_append_response_body with %s",
-                ngx_ctx.request_id, body))
+                ngx.ctx.request_id, body))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_append_response_body with %s, msg: %s",
+                ngx.ctx.request_id, body, msg))
     end
 end
 
 function _M.process_response_body(transaction)
-    local res = coraza.coraza_process_response_body(transaction)
-    if res == 1 then
-        nlog(err_fmt("Transaction %s failed to invoke coraza_process_response_body",
-                ngx_ctx.request_id))
-    else
+    local ok, msg = pcall(coraza.coraza_process_response_body,transaction)
+    if ok then
         nlog(debug_fmt("Transaction %s success to invoke coraza_process_response_body",
-                ngx_ctx.request_id))
+                ngx.ctx.request_id))
+    else
+        nlog(err_fmt("Transaction %s failed to invoke coraza_process_response_body. msg: %s",
+                ngx.ctx.request_id, msg))
     end
 end
 
 function _M.process_logging(transaction)
-    coraza.coraza_process_logging(transaction)
-    nlog(debug_fmt("Transaction %s success to invoke coraza_process_logging",
-                ngx_ctx.request_id))
+    local ok, msg = pcall(coraza.coraza_process_logging, transaction)
+    if ok then
+        nlog(debug_fmt("Transaction %s success to invoke coraza_process_logging",
+        ngx.ctx.request_id))
+    else 
+        nlog(debug_fmt("Transaction %s failed to invoke coraza_process_logging. msg: %s",
+                ngx.ctx.request_id, msg))
+    end
 end
 
 return _M

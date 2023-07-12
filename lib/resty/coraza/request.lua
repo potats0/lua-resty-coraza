@@ -4,7 +4,6 @@ local fmt = string.format
 
 local ngx = ngx
 local nlog = ngx.log
-local ngx_req = ngx.req
 
 local _M = {
     _VERSION = '1.0.0',
@@ -12,9 +11,9 @@ local _M = {
 
 
 function _M.build_and_process_header(transaction)
-    local headers, err = ngx_req.get_headers(0, true)
+    local headers, err = ngx.req.get_headers(0, true)
     if err then
-        err = fmt("failed to call ngx_req.get_headers: %s", err)
+        err = fmt("failed to call ngx.req.get_headers: %s", err)
         nlog(ngx.ERR, err)
     end
     for k, v in pairs(headers) do
@@ -24,10 +23,10 @@ function _M.build_and_process_header(transaction)
 end
 
 function _M.build_and_process_body(transaction)
-    local req_body = ngx_req.get_body_data()
+    local req_body = ngx.req.get_body_data()
     if req_body then
         -- TODO: fix code to process multipart/formdata
-        -- local path = ngx_req.get_body_file()
+        -- local path = ngx.req.get_body_file()
         -- coraza.request_body_from_file(path)
         local req_body_size = #req_body
         -- TODO req_body_size > req_body_size_opt
@@ -38,7 +37,7 @@ end
 
 function _M.build_and_process_get_args(transaction)
     -- process http get args if has
-    local arg = ngx_req.get_uri_args()
+    local arg = ngx.req.get_uri_args()
     for k,v in pairs(arg) do
         coraza.add_get_args(transaction, k, v)
     end
