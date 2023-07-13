@@ -11,7 +11,7 @@ local err_fmt = log.err_fmt
 local warn_fmt = log.warn_fmt
 
 local _M = {
-    _VERSION = '1.0.1'
+    _VERSION = '1.0.2'
 }
 
 function _M.create_waf()
