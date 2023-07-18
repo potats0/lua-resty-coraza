@@ -69,6 +69,7 @@ location /t {
     }
 
     log_by_lua_block{
+        coraza.do_log()
         coraza.do_free_transaction()
     }
 }

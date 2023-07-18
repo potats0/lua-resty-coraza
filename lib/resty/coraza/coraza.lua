@@ -327,4 +327,13 @@ function _M.process_response_body(transaction)
     end
 end
 
+function _M.process_logging(transaction)
+    local ok, msg = pcall(coraza.coraza_process_logging, transaction)
+    if ok then
+        nlog(debug_fmt("success to invoke coraza_process_logging"))
+    else 
+        nlog(debug_fmt("failed to invoke coraza_process_logging. msg: %s", msg))
+    end
+end
+
 return _M

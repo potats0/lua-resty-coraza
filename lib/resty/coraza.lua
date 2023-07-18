@@ -12,7 +12,7 @@ local err_fmt = log.err_fmt
 local warn_fmt = log.warn_fmt
 
 local _M = {
-    _VERSION = '1.0.0-rc2'
+    _VERSION = '1.0.3'
 }
 
 function _M.create_waf()
@@ -116,6 +116,10 @@ end
 
 function _M.do_body_filter()
     response.build_and_process_body(ngx.ctx.transaction)
+end
+
+function _M.do_log()
+    coraza.process_logging(ngx.ctx.transaction)
 end
 
 return _M
