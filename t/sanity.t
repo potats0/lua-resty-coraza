@@ -123,7 +123,7 @@ location /t {
     }
 --- error_code: 200
 --- error_log eval
-["Success to creat new transaction id"]
+["Success to creat new transaction"]
 
 === TEST 7: test new_transaction with nil waf pointer
 --- http_config eval: $::HttpConfig
@@ -137,7 +137,7 @@ location /t {
     }
 --- error_code: 200
 --- error_log eval
-["Failed to creat new transaction id"]
+["Failed to creat new transaction"]
 
 === TEST 8: test process_connection
 --- http_config eval: $::HttpConfig

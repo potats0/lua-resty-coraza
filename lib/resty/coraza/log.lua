@@ -15,9 +15,13 @@ local WARN = ngx.WARN
 local DEBUG = ngx.DEBUG
 
 local function log(formatstring, ...)
-    return fmt("PID: "..ngx.worker.pid()..
-              "\tphrase: "..ngx.get_phase()..
-              "\tlua-resty-coraza: "..formatstring, ...)
+    local str = "PID: "..ngx.worker.pid()..
+                "\tphrase: "..ngx.get_phase()
+    if ngx.ctx.request_id ~= nil then
+        str = str.."\tTransaction: "..ngx.ctx.request_id
+    end
+    str = str.."\tlua-resty-coraza: "..formatstring
+    return fmt(str, ...)
 end
 
 function _M.err_fmt(formatstring, ...)

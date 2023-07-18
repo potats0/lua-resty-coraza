@@ -62,9 +62,12 @@ location /t {
         coraza.do_header_filter()
         coraza.do_interrupt()
     }
+    
+    body_filter_by_lua_block{
+        coraza.do_body_filter()
+    }
 
     log_by_lua_block{
-        coraza.do_log()
         coraza.do_free_transaction()
     }
 }
@@ -77,3 +80,6 @@ error_log logs/error.log debug;
 ```
 
 the matched rules log will be logged at `ngx.ctx.coraza_msg` by `coraza.do_log()`
+
+# TODO:
+1. block response when detected the event

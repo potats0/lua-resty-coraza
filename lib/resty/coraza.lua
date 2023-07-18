@@ -1,5 +1,6 @@
 local log = require "resty.coraza.log"
 local request = require "resty.coraza.request"
+local response = require "resty.coraza.response"
 local coraza = require "resty.coraza.coraza"
 local consts = require "resty.coraza.constants"
 
@@ -11,7 +12,7 @@ local err_fmt = log.err_fmt
 local warn_fmt = log.warn_fmt
 
 local _M = {
-    _VERSION = '1.0.2'
+    _VERSION = '1.0.0-rc2'
 }
 
 function _M.create_waf()
@@ -60,7 +61,7 @@ end
 function _M.do_free_transaction()
     local transaction = ngx.ctx.transaction
     if transaction ~= nil then
-        nlog(debug_fmt("transaction %s is freed by coraza_free_transaction", ngx.ctx.request_id))
+        nlog(debug_fmt("is freed by coraza_free_transaction"))
         ngx.ctx.transaction = nil
         coraza.free_transaction(transaction)
     end
@@ -71,7 +72,7 @@ function _M.do_handle()
     -- If request has disrupted by coraza, the transaction is freed and set to nil.
     -- Response which was disrupted doesn't make sense.
     if ngx.ctx.action ~= nil and ngx.ctx.transaction ~= nil then
-        nlog(warn_fmt([[Transaction %s request: "%s" is interrupted by policy. Action is %s]], ngx.ctx.request_id, ngx.var.request, ngx.ctx.action))
+        nlog(warn_fmt([[request: "%s" is interrupted by policy. Action is %s]], ngx.var.request, ngx.ctx.action))
         if ngx.ctx.action == "drop" or ngx.ctx.action == "deny" then
             ngx.ctx.is_disrupted = true
             return ngx.ctx.status_code, fmt(consts.BLOCK_CONTENT_FORMAT, ngx.ctx.status_code)
@@ -84,18 +85,18 @@ function _M.do_interrupt()
     -- If request has disrupted by coraza, the transaction is freed and set to nil.
     -- Response which was disrupted doesn't make sense.
     if ngx.ctx.is_disrupted == true and ngx.get_phase() == "header_filter" then
-        nlog(debug_fmt("Transaction %s has been disrupted at request phrase. ignore", 
-        ngx.ctx.request_id))
+        nlog(debug_fmt("has been disrupted at request phrase. ignore"))
         return
     end
     local status_code, block_msg = _M.do_handle()
     if status_code ~= nil then
         ngx.status = ngx.ctx.status_code
-        local ok, msg = pcall(ngx.say, block_msg)
-        if ok == false then
-            nlog(err_fmt(msg))
+        if ngx.get_phase() == "header_filter" then
+            response.clear_header_as_body_modified()
+        else
+            ngx.say(block_msg)
+            return ngx.exit(ngx.status)
         end
-        return ngx.exit(ngx.status)
     end
 end
 
@@ -103,26 +104,18 @@ function _M.do_header_filter()
     if ngx.ctx.is_disrupted == true then
         -- If request was interrupted by coraza at access_by_lua phrase, the ngx.ctx.transaction will be set nil.
         -- We can bypass the check.
-        nlog(debug_fmt("Transaction %s has been disrupted at request phrase. ignore", 
-        ngx.ctx.request_id))
+        nlog(debug_fmt("has been disrupted at request phrase. ignore"))
         return
     end
-    local h = ngx.resp.get_headers(0, true)
-    for k, v in pairs(h) do
-        coraza.add_response_header(ngx.ctx.transaction, k, v)
-    end
-    -- copy from https://github.com/SpiderLabs/ModSecurity-nginx/blob/d59e4ad121df702751940fd66bcc0b3ecb51a079/src/ngx_http_modsecurity_header_filter.c#L527
-    coraza.process_response_headers(ngx.ctx.transaction, ngx.status, "HTTP 1.1")
+
+    -- process http response headers(supports HPP)
+    response.build_and_process_header(ngx.ctx.transaction)
 
     ngx.ctx.action, ngx.ctx.status_code = coraza.intervention(ngx.ctx.transaction)
 end
 
 function _M.do_body_filter()
-    -- TODO
-end
-
-function _M.do_log()
-    coraza.process_logging(ngx.ctx.transaction)
+    response.build_and_process_body(ngx.ctx.transaction)
 end
 
 return _M
