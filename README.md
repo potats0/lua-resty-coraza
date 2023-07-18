@@ -1,4 +1,5 @@
 # lua-resty-coraza
+[![Tests](https://github.com/potats0/lua-resty-coraza/actions/workflows/CI.yml/badge.svg)](https://github.com/potats0/lua-resty-coraza/actions/workflows/CI.yml)
 
 ## Name
 
