@@ -26,7 +26,7 @@ function _M.build_and_process_header(transaction)
             for _, value in ipairs(v) do
                 coraza.add_request_header(transaction, k, value)
             end
-        else 
+        else
             coraza.add_request_header(transaction, k, v)
         end
     end
@@ -34,6 +34,7 @@ function _M.build_and_process_header(transaction)
 end
 
 function _M.build_and_process_body(transaction)
+    ngx.req.read_body()
     local req_body = ngx.req.get_body_data()
     if req_body then
         -- TODO: fix code to process multipart/formdata
@@ -49,19 +50,20 @@ end
 function _M.build_and_process_get_args(transaction)
     -- process http get args if has
     local arg = ngx.req.get_uri_args()
-    for k,v in pairs(arg) do
+    for k, v in pairs(arg) do
         if type(v) == "table" then
             nlog(warn_fmt("http get args potentially has HPP!"))
             for _, value in ipairs(v) do
-                coraza.add_get_args(transaction, k, value)
+                if type(value) == "string" then
+                    -- 类似于 test.com?test 有key无value,value为boolean
+                    coraza.add_get_args(transaction, k, value)
+                end
             end
-        else
+        elseif type(v) == "string" then
+            -- 类似于 test.com?test 有key无value,value为boolean
             coraza.add_get_args(transaction, k, v)
         end
     end
 end
 
 return _M
-
-
-
