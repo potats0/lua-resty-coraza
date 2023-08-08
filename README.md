@@ -25,7 +25,7 @@ sudo make install
 ### 2. Coreruleset
 coreruleset is an opensource waf rules.
 1. clone the repository
-`git clone https://github.com/coreruleset/coreruleset`
+`git clone --recurse-submodules https://github.com/coreruleset/coreruleset`
 
 ### 3. lua-resty-coraza
 ```bash
