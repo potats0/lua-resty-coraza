@@ -81,7 +81,5 @@ if you need more log for debug, please turn on the debug on nginx.
 error_log logs/error.log debug;
 ```
 
-the matched rules log will be logged at `ngx.ctx.coraza_msg` by `coraza.do_log()`
-
 # TODO:
 1. block response when detected the event
